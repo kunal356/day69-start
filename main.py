@@ -80,6 +80,17 @@ login_manager.init_app(app)
 def load_user(user_id):
     return db.get_or_404(User, int(user_id))
 
+
+def admin_only(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        #If id is not 1 then return abort with 403 error
+        if current_user.id != 1:
+            return abort(403)
+        #Otherwise continue with the route function
+        return f(*args, **kwargs)        
+    return decorated_function
+
 # TODO: Use Werkzeug to hash the user's password when creating a new user.
 
 
@@ -88,7 +99,7 @@ def register():
     form = RegisterForm()
     if form.validate_on_submit():
         user_already_exists = db.session.execute(
-            db.select(User).where(User.email == form.email.data))
+            db.select(User).where(User.email == form.email.data)).scalar()
         if user_already_exists:
             flash('User already exists. Please Login!!!!')
             return redirect(url_for('login'))
@@ -150,6 +161,7 @@ def show_post(post_id):
 
 # TODO: Use a decorator so only an admin user can create a new post
 @app.route("/new-post", methods=["GET", "POST"])
+@admin_only
 def add_new_post():
     form = CreatePostForm()
     if form.validate_on_submit():

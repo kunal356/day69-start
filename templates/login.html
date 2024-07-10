@@ -28,7 +28,7 @@ include "header.html" %}
         {% endfor %}
         {% endif %}
         {% endwith %}
-        {{render_form(form)}}
+        {{ render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
       </div>
     </div>
   </div>
